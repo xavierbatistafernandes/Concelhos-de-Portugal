@@ -4,39 +4,35 @@
         <title>Concelhos de Portugal</title>
 
         <link rel="stylesheet" href="/webpage/css/leaflet.css">
+        <link rel="stylesheet" href="/webpage/css/cdp.css">
+
         <script src="/webpage/js/leaflet.js"></script>
 
         <!--<link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css">-->
         <!--<script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>-->
 
-        <style>
-            body {
-                padding: 0;
-                margin: 0;
-            }
-            html, body, #map {
-                height: 100%;
-                width: 100%;
-            }
-        </style>
 
     </head>
     <body>
         <!-- <h1>World Map</h1> -->
         <div id="map"></div>
+        <div id="menu">
+            <input id="btn-add-layers" class="menu-btn" type="button" value="Carregar fronteiras"> <br>
+            <input id="btn-del-layers" class="menu-btn" type="button" value="Apagar fronteiras">
+        </div>
 
         <script>
-            let options = {center: [38.43421787890949, -16.044627815603235], zoom: 4};
-            let map = L.map("map", options);
-
+            
             /* 
             L.tileLayer(
                 "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", 
                 {attribution: "&copy; OpenStreetMap"}
-            ).addTo(map);
-            */
-
-            /* Adding background layer to the map */
+                ).addTo(map);
+                */
+               
+               /* Adding background layer to the map */
+            let options = {center: [38.43421787890949, -16.044627815603235], zoom: 4};
+            let map = L.map("map", options);
             L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.{ext}', {
                 attribution: "&copy; OpenStreetMap",
                 subdomains: 'abcd',
@@ -45,19 +41,51 @@
                 ext: 'jpg'
             }).addTo(map);
 
-            let marker = L.marker([38.43421787890949, -16.044627815603235]);
-            marker.addTo(map);
-            marker.bindPopup("Welcome to <b>Portugal</b>!");
 
-            // load GeoJSON from an external file
+            /* Loading borders of municipalities */
+            let layers = L.layerGroup().addTo(map);
+
             fetch("/webpage/data/layers.geojson")
                 .then(function(response) {
                     return response.json();
                 })
                 .then(function(data) {  // add GeoJSON layer to the map once the file is loaded
-                    L.geoJSON(data).addTo(map);
+                    L.geoJSON(data).addTo(layers);
                 });
             
+            
+            /* Menu buttons load and delete layers */
+            function addLayers() {
+                fetch("/webpage/data/layers.geojson")
+                    .then(function(response) {
+                        return response.json();
+                    })
+                    .then(function(data) {  // add GeoJSON layer to the map once the file is loaded
+                        L.geoJSON(data).addTo(layers);
+                    });
+            }
+            function delLayers() {
+                layers.clearLayers();
+            }
+
+            document.getElementById("btn-add-layers").addEventListener("click", addLayers);
+            document.getElementById("btn-del-layers").addEventListener("click", delLayers);
+            
+            let marker = L.marker([38.43421787890949, -16.044627815603235]);
+            marker.addTo(map);
+            marker.bindPopup("Welcome to <b>Portugal</b>!");
+
+            
+            let popup = L.popup();
+
+            function onMapClick(e) {
+                popup
+                    .setLatLng(e.latlng)
+                    .setContent("lat: " + e.latlng.lat.toFixed(2) + "º<br>lon: " + e.latlng.lng.toFixed(2)+"º")
+                    .openOn(map);
+            }
+
+            map.addEventListener("click", onMapClick);
             
 
         </script>
