@@ -1,6 +1,6 @@
 
 function loadHurricane() {
-    window.location = "/webpage/example-02-07.html";
+    window.location = "/webpage/hurricane.html";
 }
 
 function loadCdP() {
