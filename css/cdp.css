@@ -9,6 +9,16 @@ html, body, #map {
     width: 100%;
 }
 
+h1 {
+    font-family: "Lucida Console", Courier, monospace;
+    text-align: center;
+    font-size: 3em;
+    background-color: rgb(135,206,250);
+    padding: 1.5%;
+    margin: 0%;
+
+}
+
 #map {
     width: 75%;
     float: left;
