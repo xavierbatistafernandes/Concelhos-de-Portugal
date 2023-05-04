@@ -31,7 +31,9 @@
                 */
                
                /* Adding background layer to the map */
-            let options = {center: [38.43421787890949, -16.044627815603235], zoom: 4};
+            let options = {center: [38.43421787890949, -16.044627815603235], zoom: 5};
+            options = {center: [39.51, -8.56], zoom: 7};
+
             let map = L.map("map", options);
             L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.{ext}', {
                 attribution: "&copy; OpenStreetMap",
@@ -46,40 +48,50 @@
             let geojson;
             let layers = L.layerGroup().addTo(map);
             //addLayers();
-            let colorArray = ['#67001f',
-                              '#b2182b',
-                              '#d6604d',
-                              '#f4a582',
-                              '#fddbc7',
-                              '#f7f7f7',
-                              '#d1e5f0',
-                              '#92c5de',
-                              '#4393c3',
-                              '#2166ac',
-                              '#053061'];
+            let district_rgb = ['green',
+                                '#b2182b',
+                                '#d6604d',
+                                '#f4a582',
+                                '#92c5de',
+                                '#f7f7f7',
+                                '#d1e5f0',
+                                '#92c5de',
+                                '#4393c3',
+                                '#2166ac',
+                                '#053061',
+                                '#67001f',
+                                '#b2182b',
+                                '#d6604d',
+                                '#f4a582',
+                                '#fddbc7',
+                                '#f7f7f7',
+                                'orange'];
+
+            let district_name = [   "Aveiro",          
+                                    "Beja",            
+                                    "Braga",          
+                                    "Bragança",       
+                                    "Castelo Branco",  
+                                    "Coimbra",         
+                                    "Évora",           
+                                    "Faro",            
+                                    "Guarda",          
+                                    "Leiria",        
+                                    "Lisboa",         
+                                    "Portalegre",     
+                                    "Porto",           
+                                    "Santarém",       
+                                    "Setúbal",         
+                                    "Viana do Castelo",
+                                    "Vila Real",       
+                                    "Viseu"]; 
+                
+        
 
             function borders_color(p) {
-                switch(p) {
-                    case "Aveiro":           return "#ffffd9"; break;
-                    case "Beja":             return "#edf8b1"; break;
-                    case "Braga":            return "#c7e9b4"; break;
-                    case "Bragança":         return "#7fcdbb"; break;
-                    case "Castelo Branco":   return "#41b6c4"; break;
-                    case "Coimbra":          return "#1d91c0"; break;
-                    case "Évora":            return "#225ea8"; break;
-                    case "Faro":             return "#253494"; break;
-                    case "Guarda":           return "#081d58"; break;
-                    case "Leiria":           return colorArray[0]; break;
-                    case "Lisboa":           return colorArray[1]; break;
-                    case "Portalegre":       return colorArray[2]; break;
-                    case "Porto":            return colorArray[3]; break;
-                    case "Santarém":         return colorArray[4]; break;
-                    case "Setúbal":          return colorArray[5]; break;
-                    case "Viana do Castelo": return colorArray[6]; break;
-                    case "Vila Real":        return colorArray[7]; break;
-                    case "Viseu":            return colorArray[8]; break;
-                    default:                 return "black";
-                }
+                for (let i = 0; i < district_name.length; i++) 
+                    if (district_name[i] == p) 
+                        return district_rgb[i];
             }
             
             function borders_style(feature) {
@@ -94,6 +106,8 @@
             function borders_onEachFeature(feature, layer) {
                 layer.addEventListener("mouseover", featureMouseOver);
                 layer.addEventListener("mouseout", featureMouseOut);
+                layer.bindPopup("<div style=font-size:150%;'>Distrito: " + feature.properties.NAME_1 + 
+                            "<br>Concelho: " + feature.properties.NAME_2 + "</div>");
             }
 
 
@@ -114,6 +128,7 @@
 
             /* Menu buttons load and delete layers */
             function addLayers() {
+                layers.clearLayers();
                 fetch("/webpage/data/layers.geojson")
                     .then(function(response) {
                         return response.json();
@@ -129,21 +144,24 @@
             document.getElementById("btn-add-layers").addEventListener("click", addLayers);
             document.getElementById("btn-del-layers").addEventListener("click", delLayers);
             
+            /*
             let marker = L.marker([38.43421787890949, -16.044627815603235]);
             marker.addTo(map);
             marker.bindPopup("Welcome to <b>Portugal</b>!");
+            */
 
             
+            /*
             let popup = L.popup();
-
             function onMapClick(e) {
                 popup
                     .setLatLng(e.latlng)
                     .setContent("lat: " + e.latlng.lat.toFixed(2) + "º<br>lon: " + e.latlng.lng.toFixed(2)+"º")
                     .openOn(map);
             }
-
             map.addEventListener("click", onMapClick);
+            */
+            
             
 
         </script>

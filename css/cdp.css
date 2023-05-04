@@ -7,10 +7,10 @@ body {
 html, body, #map {
     height: 100%;
     width: 100%;
+    font-family: "Lucida Console", Courier, monospace;
 }
 
 h1 {
-    font-family: "Lucida Console", Courier, monospace;
     text-align: center;
     font-size: 3em;
     background-color: rgb(135,206,250);
