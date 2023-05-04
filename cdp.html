@@ -43,17 +43,75 @@
 
 
             /* Loading borders of municipalities */
+            let geojson;
             let layers = L.layerGroup().addTo(map);
+            //addLayers();
+            let colorArray = ['#67001f',
+                              '#b2182b',
+                              '#d6604d',
+                              '#f4a582',
+                              '#fddbc7',
+                              '#f7f7f7',
+                              '#d1e5f0',
+                              '#92c5de',
+                              '#4393c3',
+                              '#2166ac',
+                              '#053061'];
 
-            fetch("/webpage/data/layers.geojson")
-                .then(function(response) {
-                    return response.json();
-                })
-                .then(function(data) {  // add GeoJSON layer to the map once the file is loaded
-                    L.geoJSON(data).addTo(layers);
-                });
+            function borders_color(p) {
+                switch(p) {
+                    case "Aveiro":           return "#ffffd9"; break;
+                    case "Beja":             return "#edf8b1"; break;
+                    case "Braga":            return "#c7e9b4"; break;
+                    case "Bragança":         return "#7fcdbb"; break;
+                    case "Castelo Branco":   return "#41b6c4"; break;
+                    case "Coimbra":          return "#1d91c0"; break;
+                    case "Évora":            return "#225ea8"; break;
+                    case "Faro":             return "#253494"; break;
+                    case "Guarda":           return "#081d58"; break;
+                    case "Leiria":           return colorArray[0]; break;
+                    case "Lisboa":           return colorArray[1]; break;
+                    case "Portalegre":       return colorArray[2]; break;
+                    case "Porto":            return colorArray[3]; break;
+                    case "Santarém":         return colorArray[4]; break;
+                    case "Setúbal":          return colorArray[5]; break;
+                    case "Viana do Castelo": return colorArray[6]; break;
+                    case "Vila Real":        return colorArray[7]; break;
+                    case "Viseu":            return colorArray[8]; break;
+                    default:                 return "black";
+                }
+            }
             
-            
+            function borders_style(feature) {
+                return {
+                    color: "black",
+                    weight: 1,
+                    fillColor: borders_color(feature.properties.NAME_1),
+                    fillOpacity: 0.7
+                };
+            }
+
+            function borders_onEachFeature(feature, layer) {
+                layer.addEventListener("mouseover", featureMouseOver);
+                layer.addEventListener("mouseout", featureMouseOut);
+            }
+
+
+            let highlightStyle = {
+                weight: 3,
+                color: "black",
+                fillOpacity: 1
+            };
+
+            function featureMouseOver(e) {
+                e.target.setStyle(highlightStyle);
+                e.target.bringToFront();
+            }
+
+            function featureMouseOut(e) {
+                geojson.resetStyle(e.target);
+            }
+
             /* Menu buttons load and delete layers */
             function addLayers() {
                 fetch("/webpage/data/layers.geojson")
@@ -61,7 +119,7 @@
                         return response.json();
                     })
                     .then(function(data) {  // add GeoJSON layer to the map once the file is loaded
-                        L.geoJSON(data).addTo(layers);
+                        geojson = L.geoJSON(data, {style: borders_style, onEachFeature: borders_onEachFeature}).addTo(layers);
                     });
             }
             function delLayers() {
