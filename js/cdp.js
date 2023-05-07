@@ -94,11 +94,22 @@ function newCOLOR_incorrect(i) {
     return incorrectColors[i];
 }
 
+function markCOLOR(i) {
+    const colors = ['#41ab5d','#fed976','#feb24c','#fd8d3c','#fc4e2a', '#e31a1c'];
+    return colors[i];
+}
+
 let layers;
 let geojson;
+
+
 let municipalities = [];
+let features = [];
+
 let goal_town;
 let geojson_data;
+
+let incorrect_count = 0;
 
 
 loadMap();
@@ -107,6 +118,8 @@ hideMap();
 
 info = document.getElementById("target");
 
+
+// Function to load the map
 function showMap() {
     map.style.display = "block";
 }
@@ -114,14 +127,15 @@ function showMap() {
 function hideMap() {
     map.style.display = "none";
 }
-
-// Function to load the map
 function loadMap() {
     /* Adding background layer to the map */
-    let options = {center: [38.43421787890949, -16.044627815603235], zoom: 5};
+/*     let options = {center: [38.43421787890949, -16.044627815603235], zoom: 5};
     options = {center: [39.51, -8.56], zoom: 7};
-
     let map = L.map("map", options);
+     */
+    
+    let map = L.map("map").setView([39.51, -8.56], 7);
+
     L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.{ext}', {
         attribution: "&copy; OpenStreetMap",
         subdomains: 'abcd',
@@ -164,6 +178,7 @@ function loadMap() {
         showMenu();
     })
 
+
 /*     let information = L.control({position: "bottomleft"});
     information.onAdd = function() {
         let div = L.DomUtil.create("div", "legend");
@@ -186,7 +201,7 @@ function OEF_mode1 (feature, layer) {
     layer.addEventListener("mouseover", featureMouseIN_mode1);
     layer.addEventListener("mouseout", featureMouseOUT_mode1);
 
-    layer.addEventListener("click", featureClick_modeGuess);
+    layer.addEventListener("click", featureClick_mode1);
 
     //layer.addEventListener("click", featureClick_debug)
 
@@ -216,13 +231,19 @@ function initMode2() {
     updateOEF(2);
 }
 
+
 function updateOEF(mode) {
 
     layers.clearLayers();   /* clearing existing features */
 
     if (mode == 1) {
         console.log("loading feature mode 1");
-        geojson = L.geoJSON(geojson_data, {style: borders_style, onEachFeature: OEF_mode1}).addTo(layers); 
+        geojson = L.geoJSON(geojson_data, {style: borders_style, onEachFeature: OEF_mode1}).addTo(layers);
+
+        geojson.eachLayer(function (layer) {
+            features.push(layer);
+        });
+        //console.log(features[6].feature.properties.NAME_2);
     }    
     else
     if (mode == 2) {
@@ -231,6 +252,9 @@ function updateOEF(mode) {
     }
 
 }
+
+
+
 
 
 
@@ -256,7 +280,7 @@ function featureMouseOUT_mode1(e) {
     e.target.bringToFront();
 }
 
-function featureClick_modeGuess(e) {
+function featureClick_mode1(e) {
     let feature_town = e.target.feature.properties.NAME_2;
     
     /* Plays a sound effect when guessing */
@@ -264,35 +288,49 @@ function featureClick_modeGuess(e) {
 
     /* Checking if the guess is correct */
     if (feature_town == goal_town) {
+        markFeatureAsDone(e.target);
         selectNewTarget();
-        markFeatureAsCorrect(e.target);
         
         e.target.removeEventListener("mouseover", featureMouseIN_mode1);
-        e.target.removeEventListener("click", featureClick_modeGuess);
+        e.target.removeEventListener("click", featureClick_mode1);
     }
     else {
-
-        markFeatureAsIncorrect(e.target)
         incorrect_count++;
-        if (incorrect_count == 5) {
-            audio_incorrect.play();
-            selectNewTarget();
-        }
+        console.log(incorrect_count);
+    }
+
+    if (incorrect_count == 5) {
+        let feat = getFeatureReference(goal_town);
+        console.log(feat);
+        console.log(feat.feature.properties.NAME_2);
+        markFeatureAsDone(feat);
+        audio_incorrect.play();
+
+        selectNewTarget();
+        //map.setView([39.51, -8.56], 7)
     }
 
 }
 
-function markFeatureAsCorrect(target) {
-    style_correct = {weight: 3, color: "black", fillColor: newCOLOR_correct(Math.floor(Math.random() * 3)), fillOpacity: 1};
+function getFeatureReference(municipality_name) {
+    for (let i = 0; i < features.length; i++) {
+        if (features[i].feature.properties.NAME_2 == municipality_name) {
+            return features[i];
+        }
+    }
+}
+
+function markFeatureAsDone(target) {
+    style_correct = {weight: 1, color: "black", fillColor: markCOLOR(incorrect_count), fillOpacity: 1};
     target.setStyle(style_correct);
     target.bringToFront();
 
     target.removeEventListener("mouseover", featureMouseIN_mode1);
     target.removeEventListener("mouseout", featureMouseOUT_mode1);
-    target.removeEventListener("click", featureClick_modeGuess);
+    target.removeEventListener("click", featureClick_mode1);
 }
 
-let incorrect_count = 0;
+
 function markFeatureAsIncorrect(target) {
     style_correct = {weight: 3, color: "black", fillColor: newCOLOR_incorrect(incorrect_count), fillOpacity: 1};
     target.setStyle(style_correct);
