@@ -40,55 +40,92 @@ let townMask = [];
 townMask.length = district_name.length;
 townMask.fill(0);
 
+let info ;
 
-let info = document.getElementById("goal");
+// Get references to the menu and map container elements
+const menu = document.getElementById("menu");
+const mapContainer = document.getElementById("map");
+
+// Get references to the game type buttons
+const gameType1Button = document.getElementById("gameType1");
+const gameType2Button = document.getElementById("gameType2");
+
+// Add event listeners to the game type buttons
+gameType1Button.addEventListener("click", function() {
+    loadMap();
+    hideMenu();
+});
+
+gameType2Button.addEventListener("click", function() {
+    loadMap();
+    hideMenu();
+});
 
 
+let layers;
+let geojson;
+let municipalities = [];
+let goal_town;
 
+// Function to load the map
+function loadMap() {
+// Code to initialize and display the map using Leaflet
+// You can create a Leaflet map instance and configure it here
+// and append it to the map container element
 
-/* Adding background layer to the map */
-let options = {center: [38.43421787890949, -16.044627815603235], zoom: 5};
-options = {center: [39.51, -8.56], zoom: 7};
+    /* Adding background layer to the map */
+    let options = {center: [38.43421787890949, -16.044627815603235], zoom: 5};
+    options = {center: [39.51, -8.56], zoom: 7};
 
-let map = L.map("map", options);
-L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.{ext}', {
-    attribution: "&copy; OpenStreetMap",
-    subdomains: 'abcd',
-    minZoom: 1,
-    maxZoom: 16,
-    ext: 'jpg'
-}).addTo(map);
-
+    let map = L.map("map", options);
+    L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.{ext}', {
+        attribution: "&copy; OpenStreetMap",
+        subdomains: 'abcd',
+        minZoom: 1,
+        maxZoom: 16,
+        ext: 'jpg'
+    }).addTo(map);
 
     /* Loading borders of municipalities */
-    let geojson;
-    let layers = L.layerGroup().addTo(map);
-
-    let municipalities = [];
-    let goal_town;
-fetch("/webpage/data/layers.geojson")
-    .then(function(response) {
-        return response.json();
-    })
-    .then(function(data) {  // add GeoJSON layer to the map once the file is loaded
-        geojson = L.geoJSON(data, {style: borders_style, onEachFeature: borders_onEachFeature}).addTo(layers);
+    layers = L.layerGroup().addTo(map);
 
 
-        /* Setup the array of municipalities */
-        municipalities.sort(() => Math.random() - 0.5);
-        console.log(municipalities[0]);
-        goal_town = municipalities[0];
-        info.innerHTML = goal_town;
-    });
-    
-/* Adding a legend to the map */
-let legend = L.control({position: "topright"});
-legend.onAdd = function() {
-    let div = L.DomUtil.create("div", "legend");
-    div.innerHTML = '<p id="goal"></p>';
-    return div;
+    fetch("/webpage/data/layers.geojson")
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(data) {  // add GeoJSON layer to the map once the file is loaded
+            geojson = L.geoJSON(data, {style: borders_style, onEachFeature: borders_onEachFeature}).addTo(layers);
+
+            /* Setup the array of municipalities */
+
+            municipalities.sort(() => Math.random() - 0.5);
+
+            goal_town = municipalities[0];
+
+            info = document.getElementById("goal");
+            info.innerHTML = goal_town;
+        });
+
+    /* Adding a legend to the map */
+    let legend = L.control({position: "topright"});
+    legend.onAdd = function() {
+        let div = L.DomUtil.create("div", "legend");
+        div.innerHTML = '<p id="goal"></p>';
+        return div;
+    }
+    legend.addTo(map);
 }
-legend.addTo(map);
+
+
+let audio_click = document.getElementById("audio-click1");
+let audio_correct = document.getElementById("audio-correct1");
+
+// Function to hide the menu
+function hideMenu() {
+    menu.style.display = "none";
+}
+
 
 function borders_color(p) {
     for (let i = 0; i < district_name.length; i++) 
@@ -104,8 +141,6 @@ function borders_style(feature) {
         fillOpacity: 0.7
     };
 }
-
-
 
 
 let x = 0;
@@ -146,7 +181,14 @@ function featureClick_modeGuess(e) {
     if (feature_town == goal_town) {
         goal_town = municipalities[++idx];
         info.innerHTML = goal_town;
+        audio_correct.play();
     }
+    else {
+        audio_click.play();
+    }
+    
+
+
 }
 
 

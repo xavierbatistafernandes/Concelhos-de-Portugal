@@ -7,17 +7,35 @@ body {
 html, body, #map {
     height: 100%;
     width: 100%;
-    font-family: "Lucida Console", Courier, monospace;
 }
 
 h1 {
-    text-align: center;
     font-size: 3em;
+    font-family: "Lucida Console", Courier, monospace;
     background-color: rgb(135,206,250);
+    text-align: center;
     padding: 1.5%;
     margin: 0%;
 }
 
+/* main page selectors */
+#menu {
+    background-color: #e3ffff;
+    padding: 10px;
+  }
+  
+
+.menu-item {
+    font-size: 200%;
+}
+
+.menu-button {
+    border-radius: 3px;
+    font-size: 300%;
+    padding: 5%;
+}
+
+/* map selectors */
 #map {
     width: 100%;
     float: left;
