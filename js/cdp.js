@@ -39,18 +39,12 @@ let district_name = [   "Aveiro",
 let townMask = [];
 townMask.length = district_name.length;
 townMask.fill(0);
-    
-let goal_town = district_name[0];
+
+
+let info = document.getElementById("goal");
 
 
 
-
-/* 
-L.tileLayer(
-"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", 
-{attribution: "&copy; OpenStreetMap"}
-).addTo(map);
-*/
 
 /* Adding background layer to the map */
 let options = {center: [38.43421787890949, -16.044627815603235], zoom: 5};
@@ -70,13 +64,22 @@ L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.{e
     let geojson;
     let layers = L.layerGroup().addTo(map);
 
-    fetch("/webpage/data/layers.geojson")
-        .then(function(response) {
-            return response.json();
-        })
-        .then(function(data) {  // add GeoJSON layer to the map once the file is loaded
-            geojson = L.geoJSON(data, {style: borders_style, onEachFeature: borders_onEachFeature}).addTo(layers);
-        });
+    let municipalities = [];
+    let goal_town;
+fetch("/webpage/data/layers.geojson")
+    .then(function(response) {
+        return response.json();
+    })
+    .then(function(data) {  // add GeoJSON layer to the map once the file is loaded
+        geojson = L.geoJSON(data, {style: borders_style, onEachFeature: borders_onEachFeature}).addTo(layers);
+
+
+        /* Setup the array of municipalities */
+        municipalities.sort(() => Math.random() - 0.5);
+        console.log(municipalities[0]);
+        goal_town = municipalities[0];
+        info.innerHTML = goal_town;
+    });
     
 /* Adding a legend to the map */
 let legend = L.control({position: "topright"});
@@ -102,24 +105,30 @@ function borders_style(feature) {
     };
 }
 
+
+
+
+let x = 0;
 function borders_onEachFeature(feature, layer) {
     layer.addEventListener("mouseover", featureMouseOver_modeGuess);
     layer.addEventListener("mouseout", featureMouseOut_modeGuess);
 
     layer.addEventListener("click", featureClick_modeGuess);
+
+    //layer.addEventListener("click", featureClick_debug)
+
+    municipalities.push(feature.properties.NAME_2);
+    //console.log("here: " + feature.properties.NAME_2);
 }
 
 
     
-    
-    let highlightStyle = {
+let highlightStyle = {
         weight: 3,
         color: "black",
     fillOpacity: 1
 };
 
-let info = document.getElementById("goal");
-info.innerHTML = goal_town;
 
 function featureMouseOver_modeGuess(e) {
     e.target.setStyle(highlightStyle);
@@ -135,7 +144,7 @@ let idx = 0;
 function featureClick_modeGuess(e) {
     let feature_town = e.target.feature.properties.NAME_2;
     if (feature_town == goal_town) {
-        goal_town = district_name[++idx];
+        goal_town = municipalities[++idx];
         info.innerHTML = goal_town;
     }
 }
@@ -152,6 +161,5 @@ function featureMouseOver_modePractise(e) {
 function featureMouseOut_modePractise(e) {
     geojson.resetStyle(e.target);
     info.innerHTML = "";
-
 }
 
