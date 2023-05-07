@@ -1,26 +1,25 @@
-// Get references to the game type buttons
+
+
 const gameType1Button = document.getElementById("gameType1");
 const gameType2Button = document.getElementById("gameType2");
 
-// Add event listeners to the game type buttons
+/* Adding event listeners to the menu buttons */
 gameType1Button.addEventListener("click", function() {
     hideMenu();
+    initMode1();
     showMap();
-    updateOEF(1);
 });
 
 gameType2Button.addEventListener("click", function() {
     hideMenu();
+    initMode2();
     showMap();
-    updateOEF(2);
 });
 
 
-
-// Get references to the menu and map container elements
 const menu = document.getElementById("menu");
 
-// Function to hide the menu
+
 function hideMenu() {
    menu.style.display = "none";
 }

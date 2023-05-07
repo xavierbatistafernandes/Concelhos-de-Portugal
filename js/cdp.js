@@ -1,63 +1,72 @@
-let district_rgb = ['green',
-'#b2182b',
-'#d6604d',
-'#f4a582',
-'#92c5de',
-'#f7f7f7',
-'#d1e5f0',
-'#92c5de',
-'#4393c3',
-'#2166ac',
-'#053061',
-'#67001f',
-'#b2182b',
-'#d6604d',
-'#f4a582',
-'#808000',
-'#f7f7f7',
-'orange'];
+/**
+ * @author Xavier Fernandes
+ * 
+ * 
+ */
 
-const town_colors_gray = [
-    'rgba(255, 255, 255, 1)',
-    'rgba(230, 230, 230, 1)',
-    'rgba(204, 204, 204, 1)',
-    'rgba(179, 179, 179, 1)',
-    'rgba(153, 153, 153, 1)',
-    'rgba(128, 128, 128, 1)',
-    'rgba(102, 102, 102, 1)',
-    'rgba(77, 77, 77, 1)',
-    'rgba(51, 51, 51, 1)',
-    'rgba(26, 26, 26, 1)',
-    'rgba(0, 0, 0, 0.9)',
-    'rgba(0, 0, 0, 0.8)',
-    'rgba(0, 0, 0, 0.7)',
-    'rgba(0, 0, 0, 0.6)',
-    'rgba(0, 0, 0, 0.5)',
-    'rgba(0, 0, 0, 0.4)',
-    'rgba(0, 0, 0, 0.3)',
-    'rgba(0, 0, 0, 0.2)'
-  ];
+const colors_many = [
+    '#1f77b4',
+    '#ff7f0e',
+    '#2ca02c',
+    '#d62728',
+    '#9467bd',
+    '#8c564b',
+    '#e377c2',
+    '#7f7f7f',
+    '#bcbd22',
+    '#17becf',
+    '#aec7e8',
+    '#ffbb78',
+    '#98df8a',
+    '#ff9896',
+    '#c5b0d5',
+    '#c49c94',
+    '#f7b6d2',
+    '#c7c7c7'];
 
-town_colors_gray.sort(() => Math.random() -0.5);
+const colors_grey = [
+    'rgba(240, 240, 240, 0.8)',
+    'rgba(228, 228, 228, 0.8)',
+    'rgba(216, 216, 216, 0.8)',
+    'rgba(204, 204, 204, 0.8)',
+    'rgba(192, 192, 192, 0.8)',
+    'rgba(180, 180, 180, 0.8)',
+    'rgba(168, 168, 168, 0.8)',
+    'rgba(156, 156, 156, 0.8)',
+    'rgba(144, 144, 144, 0.8)',
+    'rgba(132, 132, 132, 0.8)',
+    'rgba(120, 120, 120, 0.8)',
+    'rgba(108, 108, 108, 0.8)',
+    'rgba(96, 96, 96, 0.8)',
+    'rgba(84, 84, 84, 0.8)',
+    'rgba(72, 72, 72, 0.8)',
+    'rgba(60, 60, 60, 0.8)',
+    'rgba(48, 48, 48, 0.8)',
+    'rgba(36, 36, 36, 0.8)'];
 
-let district_name = [   "Aveiro",          
-"Beja",            
-"Braga",          
-"Bragança",       
-"Castelo Branco",  
-"Coimbra",         
-"Évora",           
-"Faro",            
-"Guarda",          
-"Leiria",        
-"Lisboa",         
-"Portalegre",     
-"Porto",           
-"Santarém",       
-"Setúbal",         
-"Viana do Castelo",
-"Vila Real",       
-"Viseu"]; 
+let colors = colors_many;
+
+//town_colors_gray.sort(() => Math.random() - 0.5);
+
+let district_name = [
+    "Aveiro",          
+    "Beja",            
+    "Braga",          
+    "Bragança",       
+    "Castelo Branco",  
+    "Coimbra",         
+    "Évora",           
+    "Faro",            
+    "Guarda",          
+    "Leiria",        
+    "Lisboa",         
+    "Portalegre",     
+    "Porto",           
+    "Santarém",       
+    "Setúbal",         
+    "Viana do Castelo",
+    "Vila Real",       
+    "Viseu"]; 
 
 let townMask = [];
 townMask.length = district_name.length;
@@ -65,13 +74,25 @@ townMask.fill(0);
 
 let info;
 
-let audio_click = document.getElementById("audio-click1");
-let audio_correct = document.getElementById("audio-correct1");
+let audio_click = document.getElementById("audio-click");
+let audio_correct = document.getElementById("audio-correct");
+let audio_incorrect = document.getElementById("audio-incorrect");
 
-const mapContainer = document.getElementById("map");
+/* Feature style configurations */
+let style_highlight = {weight: 3, color: "black", fillOpacity: 1};
+let style_supress = {weight: 1, color: "black", fillOpacity: 0.7};
+let style_correct;
+let style_incorrect;
 
+function newCOLOR_correct(i) {
+    const correctColors = ['#41ab5d','#74c476','#a1d99b'];
+    return correctColors[i];
+}
 
-
+function newCOLOR_incorrect(i) {
+    const incorrectColors = ['#fed976','#feb24c','#fd8d3c','#fc4e2a', '#e31a1c'];
+    return incorrectColors[i];
+}
 
 let layers;
 let geojson;
@@ -82,6 +103,9 @@ let geojson_data;
 
 loadMap();
 hideMap();
+
+
+info = document.getElementById("target");
 
 function showMap() {
     map.style.display = "block";
@@ -101,15 +125,15 @@ function loadMap() {
     L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.{ext}', {
         attribution: "&copy; OpenStreetMap",
         subdomains: 'abcd',
-        minZoom: 1,
-        maxZoom: 16,
+        minZoom: 2,
+        maxZoom: 10,
         ext: 'jpg'
     }).addTo(map);
 
     /* Loading borders of municipalities */
     layers = L.layerGroup().addTo(map);
 
-    fetch("/webpage/data/layers.geojson")
+    fetch("/webpage/data/portugal.geojson")
         .then(function(response) {
             return response.json();
         })
@@ -125,6 +149,7 @@ function loadMap() {
         return div;
     }
     legend.addTo(map);
+    //legend.remove();
     
     let interface = L.control({position:"topleft"});
     interface.onAdd = function() {
@@ -138,6 +163,57 @@ function loadMap() {
         hideMap();
         showMenu();
     })
+
+/*     let information = L.control({position: "bottomleft"});
+    information.onAdd = function() {
+        let div = L.DomUtil.create("div", "legend");
+        div.innerHTML = "";
+        for(let i = 0; i < district_name.length; i++) {
+            div.innerHTML += '<i style="background-color: ' + colors[i] + '"></i>' + district_name[i] + '<br>';
+        }
+        return div;
+    }
+    information.addTo(map); */
+}
+
+
+function shuffleMunicipalities() {
+    municipalities.sort(() => Math.random() - 0.5);
+}
+
+/* onEachFeature for map type 1 (guess mode) */
+function OEF_mode1 (feature, layer) {
+    layer.addEventListener("mouseover", featureMouseIN_mode1);
+    layer.addEventListener("mouseout", featureMouseOUT_mode1);
+
+    layer.addEventListener("click", featureClick_modeGuess);
+
+    //layer.addEventListener("click", featureClick_debug)
+
+    municipalities.push(feature.properties.NAME_2);
+}
+
+/* onEachFeature for map type 2 (info mode) */
+function OEF_mode2 (feature, layer) {
+    layer.addEventListener("mouseover", featureMouseIN_mode2);
+    layer.addEventListener("mouseout", featureMouseOUT_mode2);
+}
+
+
+function initMode1() {
+    colors = colors_grey; 
+    updateOEF(1);
+
+    /* Setup the array of municipalities */
+    shuffleMunicipalities();
+
+    goal_town = municipalities[0];
+    info.innerHTML = goal_town;
+}
+
+function initMode2() {
+    colors = colors_many;
+    updateOEF(2);
 }
 
 function updateOEF(mode) {
@@ -154,90 +230,84 @@ function updateOEF(mode) {
         geojson = L.geoJSON(geojson_data, {style: borders_style, onEachFeature: OEF_mode2}).addTo(layers); 
     }
 
-
-    /* Setup the array of municipalities */
-
-    municipalities.sort(() => Math.random() - 0.5);
-
-    goal_town = municipalities[0];
-
-    info = document.getElementById("target");
-    info.innerHTML = goal_town;
-
 }
 
 
-/* onEachFeature for map type 1 (guess mode) */
-function OEF_mode1 (feature, layer) {
-    layer.addEventListener("mouseover", featureMouseIN_mode1);
-    layer.addEventListener("mouseout", featureMouseOUT_mode1);
-
-    layer.addEventListener("click", featureClick_modeGuess);
-
-    //layer.addEventListener("click", featureClick_debug)
-
-    municipalities.push(feature.properties.NAME_2);
-
-}
-
-function OEF_mode2 (feature, layer) {
-    layer.addEventListener("mouseover", featureMouseIN_mode2);
-    layer.addEventListener("mouseout", featureMouseOUT_mode2);
-}
-
-
-let highlightStyle = {
-    weight: 3,
-    color: "black",
-fillOpacity: 1
-};
 
 function borders_color(p) {
     for (let i = 0; i < district_name.length; i++) 
         if (district_name[i] == p) 
-            return district_rgb[i];
+            return colors[i];
 }
 
 function borders_style(feature) {
-    return {
-        color: "black",
-        weight: 1,
-        fillColor: borders_color(feature.properties.NAME_1),
-        fillOpacity: 0.7
-    };
+    return {color: "black", weight: 1, fillColor: borders_color(feature.properties.NAME_1), fillOpacity: 0.7};
 }
 
 
 
 function featureMouseIN_mode1(e) {
-    e.target.setStyle(highlightStyle);
+    e.target.setStyle(style_highlight);
     e.target.bringToFront();
-
 }
 
 function featureMouseOUT_mode1(e) {
-    geojson.resetStyle(e.target);
+    e.target.setStyle(style_supress);
+    e.target.bringToFront();
 }
 
-let idx = 0;
 function featureClick_modeGuess(e) {
     let feature_town = e.target.feature.properties.NAME_2;
+    
+    /* Plays a sound effect when guessing */
+    feature_town == goal_town? audio_correct.play(): audio_click.play();
+
+    /* Checking if the guess is correct */
     if (feature_town == goal_town) {
-        goal_town = municipalities[++idx];
-        info.innerHTML = goal_town;
-        audio_correct.play();
+        selectNewTarget();
+        markFeatureAsCorrect(e.target);
+        
+        e.target.removeEventListener("mouseover", featureMouseIN_mode1);
+        e.target.removeEventListener("click", featureClick_modeGuess);
     }
     else {
-        audio_click.play();
-    }
-    
 
+        markFeatureAsIncorrect(e.target)
+        incorrect_count++;
+        if (incorrect_count == 5) {
+            audio_incorrect.play();
+            selectNewTarget();
+        }
+    }
 
 }
 
+function markFeatureAsCorrect(target) {
+    style_correct = {weight: 3, color: "black", fillColor: newCOLOR_correct(Math.floor(Math.random() * 3)), fillOpacity: 1};
+    target.setStyle(style_correct);
+    target.bringToFront();
+
+    target.removeEventListener("mouseover", featureMouseIN_mode1);
+    target.removeEventListener("mouseout", featureMouseOUT_mode1);
+    target.removeEventListener("click", featureClick_modeGuess);
+}
+
+let incorrect_count = 0;
+function markFeatureAsIncorrect(target) {
+    style_correct = {weight: 3, color: "black", fillColor: newCOLOR_incorrect(incorrect_count), fillOpacity: 1};
+    target.setStyle(style_correct);
+    target.bringToFront();
+}
+
+let count = 0;
+function selectNewTarget () {
+    goal_town = municipalities[++count];
+    info.innerHTML = goal_town;
+    incorrect_count = 0;
+}
 
 function featureMouseIN_mode2(e) {
-    e.target.setStyle(highlightStyle);
+    e.target.setStyle(style_highlight);
     e.target.bringToFront();
     let town = e.target.feature.properties.NAME_2;
     info.innerHTML = town;
@@ -247,5 +317,6 @@ function featureMouseIN_mode2(e) {
 function featureMouseOUT_mode2(e) {
     geojson.resetStyle(e.target);
     info.innerHTML = "";
+
 }
 
