@@ -1,10 +1,10 @@
 
 function loadHurricane() {
-    window.location = "/webpage/hurricane.html";
+    window.location = "/Concelhos-de-Portugal/hurricane.html";
 }
 
 function loadCdP() {
-    window.location = "/webpage/cdp.html";
+    window.location = "/Concelhos-de-Portugal/cdp.html";
 }
 
 /* document.getElementById("btn-hurricane").addEventListener("click", loadHurricane);

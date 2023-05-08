@@ -147,7 +147,7 @@ function loadMap() {
     /* Loading borders of municipalities */
     layers = L.layerGroup().addTo(map);
 
-    fetch("/webpage/data/portugal.geojson")
+    fetch("/Concelhos-de-Portugal/data/portugal.geojson")
         .then(function(response) {
             return response.json();
         })
