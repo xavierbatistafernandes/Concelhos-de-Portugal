@@ -299,7 +299,7 @@ function featureClick_mode1(e) {
         console.log(incorrect_count);
     }
 
-    if (incorrect_count == 5) {
+    if (incorrect_count == 1) {
         let feat = getFeatureReference(goal_town);
         console.log(feat);
         console.log(feat.feature.properties.NAME_2);
