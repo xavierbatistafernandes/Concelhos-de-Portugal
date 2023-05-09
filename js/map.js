@@ -110,31 +110,34 @@ let goal_town;
 let geojson_data;
 
 let incorrect_count = 0;
+let max_tries = 5;
+
+let map = null;
 
 
-loadMap();
-hideMap();
 
+/* Receive data from the URL */
+var urlParams = new URLSearchParams(window.location.search);
+var mode = urlParams.get('mode');
+console.log(mode); 
 
-info = document.getElementById("target");
+/* Determine the display mode according to URL data */
+if (mode == "p1") {
+    clearMap();
+    max_tries = 3;
+    console.log("Here");
+    loadMap();
 
-
-// Function to load the map
-function showMap() {
-    map.style.display = "block";
 }
 
-function hideMap() {
-    map.style.display = "none";
+function clearMap() {
+    if (map != null)
+        map.remove();
 }
+
 function loadMap() {
-    /* Adding background layer to the map */
-/*     let options = {center: [38.43421787890949, -16.044627815603235], zoom: 5};
-    options = {center: [39.51, -8.56], zoom: 7};
-    let map = L.map("map", options);
-     */
     
-    let map = L.map("map").setView([39.51, -8.56], 7);
+    map = L.map("map").setView([39.51, -8.56], 7);
 
     L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.{ext}', {
         attribution: "&copy; OpenStreetMap",
@@ -144,51 +147,33 @@ function loadMap() {
         ext: 'jpg'
     }).addTo(map);
 
+
     /* Loading borders of municipalities */
     layers = L.layerGroup().addTo(map);
 
-    fetch("/Concelhos-de-Portugal/data/portugal.geojson")
+    /* Loads GeoJSON data of the municipalities */
+    fetch("./data/portugal.geojson")
         .then(function(response) {
             return response.json();
         })
         .then(function(data) {  // add GeoJSON layer to the map once the file is loaded
             geojson_data = data;
+
+            
+            /* Adding an interface to show the targer municipality */
+            let legend = L.control({position: "topright"});
+            legend.onAdd = function() {
+                let div = L.DomUtil.create("div", "legend");
+                div.innerHTML = '<p id="target"></p>';
+                return div;
+            }
+            legend.addTo(map);
+            
+            info = document.getElementById("target");
+
+            initMode1();
         });
 
-    /* Adding a legend to the map */
-    let legend = L.control({position: "topright"});
-    legend.onAdd = function() {
-        let div = L.DomUtil.create("div", "legend");
-        div.innerHTML = '<p id="target"></p>';
-        return div;
-    }
-    legend.addTo(map);
-    //legend.remove();
-    
-    let interface = L.control({position:"topleft"});
-    interface.onAdd = function() {
-        let div = L.DomUtil.create("div", "legend");
-        div.innerHTML = '<button id="btn-map-back">Voltar</button>';
-        return div;
-    }
-    interface.addTo(map);
-
-    document.getElementById("btn-map-back").addEventListener("click", function () {
-        hideMap();
-        showMenu();
-    })
-
-
-/*     let information = L.control({position: "bottomleft"});
-    information.onAdd = function() {
-        let div = L.DomUtil.create("div", "legend");
-        div.innerHTML = "";
-        for(let i = 0; i < district_name.length; i++) {
-            div.innerHTML += '<i style="background-color: ' + colors[i] + '"></i>' + district_name[i] + '<br>';
-        }
-        return div;
-    }
-    information.addTo(map); */
 }
 
 
@@ -243,7 +228,7 @@ function updateOEF(mode) {
         geojson.eachLayer(function (layer) {
             features.push(layer);
         });
-        //console.log(features[6].feature.properties.NAME_2);
+        console.log(features[6].feature.properties.NAME_2);
     }    
     else
     if (mode == 2) {
@@ -299,7 +284,7 @@ function featureClick_mode1(e) {
         console.log(incorrect_count);
     }
 
-    if (incorrect_count == 1) {
+    if (incorrect_count == max_tries) {
         let feat = getFeatureReference(goal_town);
         console.log(feat);
         console.log(feat.feature.properties.NAME_2);
