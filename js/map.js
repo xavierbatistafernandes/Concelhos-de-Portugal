@@ -72,7 +72,7 @@ let townMask = [];
 townMask.length = district_name.length;
 townMask.fill(0);
 
-let info;
+let target;
 
 let audio_click = document.getElementById("audio-click");
 let audio_correct = document.getElementById("audio-correct");
@@ -119,16 +119,11 @@ let map = null;
 /* Receive data from the URL */
 var urlParams = new URLSearchParams(window.location.search);
 var mode = urlParams.get('mode');
-console.log(mode); 
+console.log("[INFO] mode = " + mode); 
 
 /* Determine the display mode according to URL data */
-if (mode == "p1") {
-    clearMap();
-    max_tries = 3;
-    console.log("Here");
-    loadMap();
-
-}
+clearMap();
+loadMap();
 
 function clearMap() {
     if (map != null)
@@ -168,21 +163,17 @@ function loadMap() {
                 return div;
             }
             legend.addTo(map);
-            
-            info = document.getElementById("target");
+            target = document.getElementById("target");
 
-            initMode1();
+            
+            initMode(mode);
         });
 
 }
 
 
-function shuffleMunicipalities() {
-    municipalities.sort(() => Math.random() - 0.5);
-}
-
 /* onEachFeature for map type 1 (guess mode) */
-function OEF_mode1 (feature, layer) {
+function OEF_PlayMode1 (feature, layer) {
     layer.addEventListener("mouseover", featureMouseIN_mode1);
     layer.addEventListener("mouseout", featureMouseOUT_mode1);
 
@@ -194,49 +185,43 @@ function OEF_mode1 (feature, layer) {
 }
 
 /* onEachFeature for map type 2 (info mode) */
-function OEF_mode2 (feature, layer) {
+function OEF_LearnMode1 (feature, layer) {
     layer.addEventListener("mouseover", featureMouseIN_mode2);
     layer.addEventListener("mouseout", featureMouseOUT_mode2);
 }
 
 
-function initMode1() {
+function initMode(mode) {
+    if (mode == "p1") initPlayMode1(); else
+    if (mode == "p2") initPlayMode2(); else
+    if (mode == "l1") initLearnMode1();
+}
+
+function initPlayMode1() {
     colors = colors_grey; 
-    updateOEF(1);
+
+    geojson = L.geoJSON(geojson_data, {style: borders_style, onEachFeature: OEF_PlayMode1}).addTo(layers);
+
+    /* Saving references to each municipality */
+    geojson.eachLayer(function (layer) {
+        features.push(layer);
+    });
 
     /* Setup the array of municipalities */
-    shuffleMunicipalities();
+    municipalities.sort(() => Math.random() - 0.5);
 
     goal_town = municipalities[0];
-    info.innerHTML = goal_town;
+    target.innerHTML = goal_town;
 }
 
-function initMode2() {
+function initLearnMode1() {
     colors = colors_many;
-    updateOEF(2);
+
+    console.log("initLearnMode1()");
+    geojson = L.geoJSON(geojson_data, {style: borders_style, onEachFeature: OEF_LearnMode1}).addTo(layers); 
 }
 
 
-function updateOEF(mode) {
-
-    layers.clearLayers();   /* clearing existing features */
-
-    if (mode == 1) {
-        console.log("loading feature mode 1");
-        geojson = L.geoJSON(geojson_data, {style: borders_style, onEachFeature: OEF_mode1}).addTo(layers);
-
-        geojson.eachLayer(function (layer) {
-            features.push(layer);
-        });
-        console.log(features[6].feature.properties.NAME_2);
-    }    
-    else
-    if (mode == 2) {
-        console.log("loading feature mode 2");
-        geojson = L.geoJSON(geojson_data, {style: borders_style, onEachFeature: OEF_mode2}).addTo(layers); 
-    }
-
-}
 
 
 
@@ -325,7 +310,7 @@ function markFeatureAsIncorrect(target) {
 let count = 0;
 function selectNewTarget () {
     goal_town = municipalities[++count];
-    info.innerHTML = goal_town;
+    target.innerHTML = goal_town;
     incorrect_count = 0;
 }
 
@@ -333,13 +318,13 @@ function featureMouseIN_mode2(e) {
     e.target.setStyle(style_highlight);
     e.target.bringToFront();
     let town = e.target.feature.properties.NAME_2;
-    info.innerHTML = town;
+    target.innerHTML = town;
 
 }
 
 function featureMouseOUT_mode2(e) {
     geojson.resetStyle(e.target);
-    info.innerHTML = "";
+    target.innerHTML = "";
 
 }
 
