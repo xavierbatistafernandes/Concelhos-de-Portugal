@@ -15,20 +15,56 @@
         <h1>Pronto para testares os teus conhecimentos?</h1>
 
         <div class="container">
-            <p>Seleciona um modo de jogo.</p>
+            <p class="big">Seleciona um modo de jogo.</p>
 
             <div id="playmode1" class="container-item">
-                <h3>Casual</h3>
-                <p>Tens várias tentativas, se errares continuas a jogar até correres todos os concelhos.</p>
-                <input id="btn-play1" type="button" value="Jogar">
+                <div id="menu1">
+                    <h3>Casual</h3>
+                    <p>Tens várias tentativas, se errares continuas a jogar até correres todos os concelhos.</p>
+                    <input id="btn-play1" type="button" value="Jogar">
+                </div>
+                <div id="select1" class="hide">
+                    <h3>Que distritos queres jogar?</h3>
+                    <select id="select-play1">
+                        <option value="Todos">Todos</option>
+                        <option value="Aveiro">Aveiro</option>
+                        <option value="Beja">Beja</option>
+                        <option value="Braga">Braga</option>
+                        <option value="Bragança">Bragança</option>
+                        <option value="Castelo Branco">Castelo Branco</option>
+                        <option value="Coimbra">Coimbra</option>
+                        <option value="Évora">Évora</option>
+                        <option value="Faro">Faro</option>
+                        <option value="Guarda">Guarda</option>
+                        <option value="Leiria">Leiria</option>
+                        <option value="Lisboa">Lisboa</option>
+                        <option value="Portalegre">Portalegre</option>
+                        <option value="Porto">Porto</option>
+                        <option value="Santarém">Santarém</option>
+                        <option value="Setúbal">Setúbal</option>
+                        <option value="Viana do Castelo">Viana do Castelo</option>
+                        <option value="Vila Real">Vila Real</option>
+                        <option value="Viseu">Viseu</option>
+                    </select>
+                    <input id="btn-accept1" type="button" value="Jogar">
+                </div>
             </div>
 
             <div id="playmode2" class="container-item">
-                <h3>Morte Súbita</h3>
-                <p>Se erras um concelho perdes automaticamente.</p>
-                <input id="btn-play2" type="button" value="Jogar">
+                <div id="menu2">
+                    <h3>Morte Súbita</h3>
+                    <p>Se erras um concelho perdes automaticamente.</p>
+                    <input id="btn-play2" type="button" value="Jogar">
+                </div>
+                <div id="select2" class="hide">
+                    <h3>Não há nada aqui!</h3>
+                    <p>Este modo de jogo ainda não foi implementado.</p>
+                </div>
             </div>
+
         </div>
+
+        
 
         <script src="js/script.js"></script>
     </body>

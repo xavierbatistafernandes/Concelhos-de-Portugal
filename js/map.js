@@ -4,6 +4,26 @@
  * 
  */
 
+let layers  = null;
+let geojson = null;
+let legend  = null;
+let map     = null;
+
+
+let municipalities = [];
+let municipalities_count;
+let features = [];
+
+let goal_town;
+let geojson_data;
+
+let incorrect_count = 0;
+let max_tries = 5;
+
+
+let count = 0;
+let num_municipalities = 3;
+
 const colors_many = [
     '#1f77b4',
     '#ff7f0e',
@@ -66,7 +86,48 @@ let district_name = [
     "Setúbal",         
     "Viana do Castelo",
     "Vila Real",       
-    "Viseu"]; 
+    "Viseu"];
+
+let starting_latlng = [
+    [40.72,-8.39], // 0
+    [37.82,-8.01], 
+    [41.55,-8.30],
+    [41.41,-6.99],
+    [39.92,-7.50],
+    [40.19,-8.32], // 5
+    [38.61,-7.82],
+    [37.27,-8.16],
+    [40.67,-7.37],
+    [39.68,-8.82],
+    [38.95,-9.13], // 10
+    [39.23,-7.61],
+    [41.22,-8.33],
+    [39.17,-8.51],
+    [38.20,-8.67],
+    [41.85,-8.52], // 15
+    [41.54,-7.62],
+    [40.79,-7.86]];
+
+let starting_zoom = [
+    9, // 0
+    9,
+    10,
+    9,
+    9,
+    10, // 5
+    9,
+    9,
+    9,
+    9,
+    9.80, // 10
+    9,
+    10,
+    9,
+    9,
+    9.80, // 15
+    9,
+    9]
+
 
 let townMask = [];
 townMask.length = district_name.length;
@@ -84,42 +145,37 @@ let style_supress = {weight: 1, color: "black", fillOpacity: 0.7};
 let style_correct;
 let style_incorrect;
 
-function newCOLOR_correct(i) {
-    const correctColors = ['#41ab5d','#74c476','#a1d99b'];
-    return correctColors[i];
-}
-
-function newCOLOR_incorrect(i) {
-    const incorrectColors = ['#fed976','#feb24c','#fd8d3c','#fc4e2a', '#e31a1c'];
-    return incorrectColors[i];
-}
-
-function markCOLOR(i) {
-    const colors = ['#41ab5d','#fed976','#feb24c','#fd8d3c','#fc4e2a', '#e31a1c'];
-    return colors[i];
-}
-
-let layers;
-let geojson;
-
-
-let municipalities = [];
-let features = [];
-
-let goal_town;
-let geojson_data;
-
-let incorrect_count = 0;
-let max_tries = 5;
-
-let map = null;
-
-
 
 /* Receive data from the URL */
-var urlParams = new URLSearchParams(window.location.search);
-var mode = urlParams.get('mode');
-console.log("[INFO] mode = " + mode); 
+let urlParams = new URLSearchParams(window.location.search);
+let mode = urlParams.get('mode');
+let selected_district = urlParams.get('district');
+
+console.log("[INFO] district = " + selected_district);
+console.log("[INFO] mode = " + mode);
+
+//selected_district = district_name[17];
+
+/* Setting up the initial zoom and latlng */
+
+if (selected_district != null) {
+    let idx = 0;
+    for (idx = 0; idx < district_name.length; idx++) {
+        if (district_name[idx] == selected_district)
+            break;
+    }
+
+    init_zoom = starting_zoom[idx];
+    init_latlng = starting_latlng[idx];
+}
+else {
+    init_zoom = 6.5;
+    init_latlng = [39.51, -8.56];
+}
+
+
+
+
 
 /* Determine the display mode according to URL data */
 clearMap();
@@ -130,9 +186,21 @@ function clearMap() {
         map.remove();
 }
 
+function getNumMunicipalities(district) {
+    let count = 0;
+    if (district == null) return features.length;
+
+    for (let i = 0; i < features.length; i++)
+        if (features[i].feature.properties.NAME_1 == district)
+            count++;
+    return count;
+}
+
+
 function loadMap() {
     
-    map = L.map("map").setView([39.51, -8.56], 7);
+    //map = L.map('map', {zoomSnap: 0.05}).setView([39.51, -8.56], 7);
+    map = L.map('map', {zoomSnap: 0.05}).setView(init_latlng, init_zoom);
 
     L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.{ext}', {
         attribution: "&copy; OpenStreetMap",
@@ -151,12 +219,11 @@ function loadMap() {
         .then(function(response) {
             return response.json();
         })
-        .then(function(data) {  // add GeoJSON layer to the map once the file is loaded
+        .then(function(data) {
             geojson_data = data;
-
             
             /* Adding an interface to show the targer municipality */
-            let legend = L.control({position: "topright"});
+            legend = L.control({position: "topright"});
             legend.onAdd = function() {
                 let div = L.DomUtil.create("div", "legend");
                 div.innerHTML = '<p id="target"></p>';
@@ -165,26 +232,33 @@ function loadMap() {
             legend.addTo(map);
             target = document.getElementById("target");
 
-            
+            /* Load the selected mode operation */
             initMode(mode);
+
+            num_municipalities = getNumMunicipalities(selected_district);
+
         });
 
 }
 
 
-/* onEachFeature for map type 1 (guess mode) */
+
+
+
+/* Methods to execute for all features of the GeoJSON data */
 function OEF_PlayMode1 (feature, layer) {
-    layer.addEventListener("mouseover", featureMouseIN_mode1);
-    layer.addEventListener("mouseout", featureMouseOUT_mode1);
 
-    layer.addEventListener("click", featureClick_mode1);
+    if (feature.properties.NAME_1 == selected_district || selected_district == null) {
+        layer.addEventListener("mouseover", featureMouseIN_mode1);
+        layer.addEventListener("mouseout", featureMouseOUT_mode1);
 
-    //layer.addEventListener("click", featureClick_debug)
+        layer.addEventListener("click", featureClick_mode1);
+        
+        municipalities.push(feature.properties.NAME_2);
+    }
 
-    municipalities.push(feature.properties.NAME_2);
 }
 
-/* onEachFeature for map type 2 (info mode) */
 function OEF_LearnMode1 (feature, layer) {
     layer.addEventListener("mouseover", featureMouseIN_mode2);
     layer.addEventListener("mouseout", featureMouseOUT_mode2);
@@ -195,10 +269,13 @@ function initMode(mode) {
     if (mode == "p1") initPlayMode1(); else
     if (mode == "p2") initPlayMode2(); else
     if (mode == "l1") initLearnMode1();
+
 }
 
+/* Inititalization of different mode styles */
+
 function initPlayMode1() {
-    colors = colors_grey; 
+    colors = colors_grey;
 
     geojson = L.geoJSON(geojson_data, {style: borders_style, onEachFeature: OEF_PlayMode1}).addTo(layers);
 
@@ -216,14 +293,8 @@ function initPlayMode1() {
 
 function initLearnMode1() {
     colors = colors_many;
-
-    console.log("initLearnMode1()");
     geojson = L.geoJSON(geojson_data, {style: borders_style, onEachFeature: OEF_LearnMode1}).addTo(layers); 
 }
-
-
-
-
 
 
 
@@ -235,9 +306,10 @@ function borders_color(p) {
 }
 
 function borders_style(feature) {
-    return {color: "black", weight: 1, fillColor: borders_color(feature.properties.NAME_1), fillOpacity: 0.7};
+    if (selected_district == null) return {color: "black", weight: 1, fillColor: borders_color(feature.properties.NAME_1), fillOpacity: 0.7};
+    if (selected_district == feature.properties.NAME_1 || selected_district == null) return {color: "black", weight: 1, fillColor: "rgba(186, 186, 186)", fillOpacity: 0.7};
+    else return {color: "black", weight: 1, fillColor: "rgb(91, 97, 100)", fillOpacity: 0.7}; 
 }
-
 
 
 function featureMouseIN_mode1(e) {
@@ -266,18 +338,22 @@ function featureClick_mode1(e) {
     }
     else {
         incorrect_count++;
-        console.log(incorrect_count);
     }
 
     if (incorrect_count == max_tries) {
         let feat = getFeatureReference(goal_town);
-        console.log(feat);
-        console.log(feat.feature.properties.NAME_2);
+
         markFeatureAsDone(feat);
         audio_incorrect.play();
 
         selectNewTarget();
-        //map.setView([39.51, -8.56], 7)
+
+    }
+
+    if (count == municipalities.length) {
+        legend.remove();
+        map.setView([39.31, -8.56], 6.5);
+
     }
 
 }
@@ -307,7 +383,7 @@ function markFeatureAsIncorrect(target) {
     target.bringToFront();
 }
 
-let count = 0;
+
 function selectNewTarget () {
     goal_town = municipalities[++count];
     target.innerHTML = goal_town;
@@ -328,3 +404,34 @@ function featureMouseOUT_mode2(e) {
 
 }
 
+
+function newCOLOR_correct(i) {
+    const correctColors = ['#41ab5d','#74c476','#a1d99b'];
+    return correctColors[i];
+}
+
+function newCOLOR_incorrect(i) {
+    const incorrectColors = ['#fed976','#feb24c','#fd8d3c','#fc4e2a', '#e31a1c'];
+    return incorrectColors[i];
+}
+
+function markCOLOR(i) {
+    const colors = ['#41ab5d','#fed976','#feb24c','#fd8d3c','#fc4e2a', '#e31a1c'];
+    return colors[i];
+}
+
+
+
+/* Popup on click function */
+/* let popup = L.popup();
+function onMapClick(e) {
+    popup
+        .setLatLng(e.latlng)
+        .setContent(
+            "You clicked the map at -<br>" + 
+            "<b>lon:</b> " + e.latlng.lng + "<br>" + 
+            "<b>lat:</b> " + e.latlng.lat
+        )
+        .openOn(map);
+}
+map.addEventListener("click", onMapClick); */
