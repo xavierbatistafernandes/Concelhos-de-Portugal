@@ -2,17 +2,19 @@
 body, ul {
     margin: 0;
     padding: 0;
+    font-size: larger;
   }
   
   /* Style the navigation */
   nav {
     background-color: #333;
+    font-size: larger;
   }
   
   nav ul {
     list-style: none;
     display: flex;
-    justify-content: flex-start; /* Align links to the left */
+    justify-content: flex-start;
     padding: 10px;
   }
   
@@ -24,7 +26,6 @@ body, ul {
     color: #fff;
     text-decoration: none;
     padding: 10px;
-    font-size: 20px; /* Increase font size for the navigation links */
     transition: all 0.3s ease;
   }
   
@@ -33,20 +34,19 @@ body, ul {
     color: #fff;
   }
   
-  /* Style the active link */
   nav ul li a.active {
     background-color: #555;
   }
 
 h1, h2, h3 {
     text-align: center;
-    margin: 1%;
     padding: 30px;
     padding-bottom: 0px;
 }
 
 h1.big {
-  font-size: 500%;
+  margin-top: 10%;
+  font-size: 600%;
   color: #5392c5;
 }
 
@@ -98,29 +98,13 @@ select {
   display: block;
 }
 
-/* select {
-  padding: 8px;
-  font-size: 16px;
-  border-radius: 4px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background-color: #f2f2f2;
-  padding: 20px;
-  border-radius: 8px;
-}
- */
-
-
 
 .container-item {
   margin: 20px;
   padding: 20px;
   border: 1px solid #ccc;
   border-radius: 5px;
-  width: 80%;
-  max-width: 600px;
+  width: 50%;
   text-align: center;
   background-color: #e7e7e7;
 }
@@ -130,13 +114,14 @@ select {
 }
 
 .container-item h3 {
-  font-size: 30px;
+  font-size: 2.5rem;
   padding: 10px;
   margin: 0;
 }
 
 
 input[type="button"] {
+  margin: 10px auto;
   padding: 10px 20px;
   background-color: #007bff;
   color: #fff;
@@ -144,6 +129,7 @@ input[type="button"] {
   border-radius: 5px;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
+  font-size: 1rem;
 }
 
 input[type="button"]:hover {
